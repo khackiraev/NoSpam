@@ -1,4 +1,74 @@
- "admin_panel": "Ба панели мудири хуш омадед. Шумо метавонед аз ин ҷо ба ҳама чатҳо пайғом фиристоед. Барои дидани омор, /stats нависед."
+# Импортируем необходимые библиотеки
+import telebot
+import sqlite3
+import re
+import time
+
+# Создаем объект бота с токеном, полученным от @BotFather
+bot = telebot.TeleBot("6018224625:AAEPITjKBamD1QGnQ1vJUIC02tYL0KawMP4")
+
+# Создаем подключение к базе данных
+conn = sqlite3.connect("bot.db")
+cursor = conn.cursor()
+
+# Создаем таблицы для хранения информации о пользователях, чатах и ссылках
+cursor.execute("""CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY,
+    language TEXT,
+    warning TEXT
+)""")
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS chats (
+    chat_id INTEGER PRIMARY KEY,
+    chat_title TEXT,
+    chat_type TEXT
+)""")
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS links (
+    link_id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    chat_id INTEGER,
+    message_id INTEGER,
+    link TEXT,
+    timestamp REAL
+)""")
+
+# Закрываем подключение к базе данных
+conn.close()
+
+# Создаем словарь для хранения языковых настроек
+languages = {
+    "en": {
+        "welcome": "Hello, I am a bot that deletes links sent by users in chats and sends a warning message about the prohibition of sending links. Messages with links will be automatically deleted after 30 seconds. Please choose your preferred language: English, Русский, O'zbek, Тоҷикӣ.",
+        "language_set": "Your language has been set to English.",
+        "warning_set": "Your warning message has been set to: {}",
+        "default_warning": "Please do not send links in this chat.",
+        "link_deleted": "Your message with a link has been deleted: {}",
+        "admin_panel": "Welcome to the admin panel. You can send messages to all chats from here. To see the statistics, type /stats."
+    },
+    "ru": {
+        "welcome": "Здравствуйте, я бот, который удаляет ссылки, отправленные пользователями в чатах, и отправляет предупреждающее сообщение о запрете на отправку ссылок. Сообщения со ссылками будут автоматически удалены через 30 секунд. Пожалуйста, выберите предпочитаемый язык: English, Русский, O'zbek, Тоҷикӣ.",
+        "language_set": "Ваш язык установлен на русский.",
+        "warning_set": "Ваше предупреждающее сообщение установлено на: {}",
+        "default_warning": "Пожалуйста, не отправляйте ссылки в этот чат.",
+        "link_deleted": "Ваше сообщение со ссылкой было удалено: {}",
+        "admin_panel": "Добро пожаловать в панель администратора. Вы можете отправлять сообщения во все чаты отсюда. Чтобы посмотреть статистику, введите /stats."
+    },
+    "uz": {
+        "welcome": "Salom, men chatlardagi foydalanuvchilar tomonidan yuborilgan havolalarni o'chirib tashlaydigan va havola yuborish taqiqlanishi haqida ogohlantiruvchi xabar yuboradigan botman. Havolali xabarlarni avtomatik ravishda 30 sekunddan keyin o'chirib tashlanadi. Iltimos, o'zingizga yoqadigan tilni tanlang: English, Русский, O'zbek, Тоҷикӣ.",
+        "language_set": "Tilingiz o'zbek tiliga o'rnatildi.",
+        "warning_set": "Ogohlantiruvchi xabaringiz quyidagicha o'rnatildi: {}",
+        "default_warning": "Iltimos, ushbu chatga havola yubormang.",
+        "link_deleted": "Havolali xabaringiz o'chirib tashlandi: {}",
+        "admin_panel": "Admin paneliga xush kelibsiz. Siz bu erdan barcha chatlarga xabar yuborishingiz mumkin. Statistikani ko'rish uchun /stats deb yozing."
+    },
+    "tg": {
+        "welcome": "Салом, ман чатҳои истифодабарандагон тарафи аз фиристода шудааст, ва пайғоми огоҳӣ дар бораи манъияти фиристодани истинодҳо фиристода мешавад. Пайғомҳои бо истинодҳо баъд аз 30 сония ба таври худкор ҳазф мешаванд. Лутфан, забони худро интихоб кунед: English, Русский, O'zbek, Тоҷикӣ.",
+        "language_set": "Забони шумо ба тоҷикӣ танзим шуд.",
+        "warning_set": "Пайғоми огоҳии шумо ба ин тавр танзим шуд: {}",
+        "default_warning": "Лутфан, дар ин чат истинодҳо фиристода накунед.",
+        "link_deleted": "Пайғоми шумо бо истинод ҳазф шуд: {}",
+        "admin_panel": "Ба панели мудири хуш омадед. Шумо метавонед аз ин ҷо ба ҳама чатҳо пайғом фиристоед. Барои дидани омор, /stats нависед."
     }
 }
 
@@ -245,4 +315,3 @@ def handle_text(message):
 
 # Запускаем бота в бесконечном цикле
 bot.polling(none_stop=True)
-
